@@ -32,7 +32,7 @@ bool settingsEnabled = false;
 float lightPosition[3] = {0.0f, 2.0f, 0.0f};
 float lightColor[3] = {1.0f, 1.0f, 1.0f};
 int currentDebugOption = 0;
-const char* debugOptions[] = { "DISABLED", "POSITION", "NORMALS", "DEPTH"};
+const char* debugOptions[] = { "DISABLED", "POSITION", "NORMALS", "REVERSED_DEPTH", "DEPTH"};
 
 int main()
 {
@@ -65,11 +65,14 @@ int main()
     Shader basicShader("shaders/basic.vert", "shaders/basic.frag");
     Shader skyboxShader("shaders/skybox.vert", "shaders/skybox.frag");
     Shader geometryPassShader("shaders/geometryPass.vert", "shaders/geometryPass.frag");
+    Shader refractionFirstPassShader("shaders/refractionFirstPass.vert", "shaders/refractionFirstPass.frag");
     Shader lightingPassShader("shaders/lightingPass.vert", "shaders/lightingPass.frag");
     Shader positionBufferDebugShader("shaders/positionBufferDebug.vert", "shaders/positionBufferDebug.frag");
     Shader normalsBufferDebugShader("shaders/normalsBufferDebug.vert", "shaders/normalsBufferDebug.frag");
+    Shader reversedDepthBufferDebugShader("shaders/reversedDepthBufferDebug.vert", "shaders/reversedDepthBufferDebug.frag");
     Shader depthBufferDebugShader("shaders/depthBufferDebug.vert", "shaders/depthBufferDebug.frag");
     Model box("models/box.obj");
+    Model extraBox("models/box.obj");
 
     float skyboxVertices[] = {     
         -1.0f,  1.0f, -1.0f,
@@ -148,7 +151,7 @@ int main()
     unsigned int gBuffer;
     glGenFramebuffers(1, &gBuffer);
     glBindFramebuffer(GL_FRAMEBUFFER, gBuffer);
-    unsigned int gPosition, gNormal, gAlbedoSpec, gDepth;
+    unsigned int gPosition, gNormal, gAlbedoSpec;
 
     glGenTextures(1, &gPosition);
     glBindTexture(GL_TEXTURE_2D, gPosition);
@@ -171,21 +174,14 @@ int main()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, gAlbedoSpec, 0);
 
-    glGenTextures(1, &gDepth);
-    glBindTexture(GL_TEXTURE_2D, gDepth);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, SCR_WIDTH, SCR_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, gDepth, 0);
-
     unsigned int attachments[3] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
     glDrawBuffers(3, attachments);
 
-    /*unsigned int rboDepth;
+    unsigned int rboDepth;
     glGenRenderbuffers(1, &rboDepth);
     glBindRenderbuffer(GL_RENDERBUFFER, rboDepth);
     glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, SCR_WIDTH, SCR_HEIGHT);
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rboDepth);*/
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rboDepth);
 
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
         std::cout << "Framebuffer not complete!" << std::endl;
@@ -197,13 +193,40 @@ int main()
     normalsBufferDebugShader.use();
     normalsBufferDebugShader.setInt("gNormal", 1);
 
-    depthBufferDebugShader.use();
-    depthBufferDebugShader.setInt("gDepth", 3);
-
     lightingPassShader.use();
     lightingPassShader.setInt("gPosition", 0);
     lightingPassShader.setInt("gNormal", 1);
     lightingPassShader.setInt("gAlbedoSpec", 2);
+
+    unsigned int refractionBuffer;
+    glGenFramebuffers(1, &refractionBuffer);
+    glBindFramebuffer(GL_FRAMEBUFFER, refractionBuffer);
+    unsigned int gReversedDepth, gDepth;
+
+    glGenTextures(1, &gReversedDepth);
+    glBindTexture(GL_TEXTURE_2D, gReversedDepth);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, SCR_WIDTH, SCR_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, gReversedDepth, 0);
+    glDrawBuffer(GL_NONE);
+    glReadBuffer(GL_NONE);
+
+    glGenTextures(1, &gDepth);
+    glBindTexture(GL_TEXTURE_2D, gDepth);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, SCR_WIDTH, SCR_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+        std::cout << "Framebuffer not complete!" << std::endl;
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    reversedDepthBufferDebugShader.use();
+    reversedDepthBufferDebugShader.setInt("gReversedDepth", 3);
+
+    depthBufferDebugShader.use();
+    depthBufferDebugShader.setInt("gDepth", 4);
 
     int fps = 0;
     float fpsRefreshTimer = 0.0f;
@@ -235,8 +258,45 @@ int main()
         geometryPassShader.setMat4("projection", projection);
         geometryPassShader.setMat4("view", view);
         geometryPassShader.setMat4("model", model);
+        extraBox.Draw(geometryPassShader);
+        glm::mat4 extraModel = glm::mat4(1.0f);
+        extraModel = glm::translate(extraModel, glm::vec3(3.0f, 0.0f, 2.0f));
+        geometryPassShader.setMat4("model", extraModel);
         box.Draw(geometryPassShader);
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
+#pragma endregion
+        
+#pragma region Refraction passes
+#pragma region Refraction first pass
+        glBindFramebuffer(GL_FRAMEBUFFER, refractionBuffer);
+        glClearDepth(0.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glDepthFunc(GL_GREATER);
+        refractionFirstPassShader.use();
+        refractionFirstPassShader.setMat4("projection", projection);
+        refractionFirstPassShader.setMat4("view", view);
+        refractionFirstPassShader.setMat4("model", model);
+        extraBox.Draw(refractionFirstPassShader);
+        refractionFirstPassShader.setMat4("model", extraModel);
+        box.Draw(refractionFirstPassShader);
+        glDepthFunc(GL_LESS);
+        glClearDepth(1.0f);
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+#pragma endregion
+#pragma region Refraction second pass
+        glBindFramebuffer(GL_FRAMEBUFFER, refractionBuffer);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, gDepth, 0);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        refractionFirstPassShader.use();
+        refractionFirstPassShader.setMat4("projection", projection);
+        refractionFirstPassShader.setMat4("view", view);
+        refractionFirstPassShader.setMat4("model", model);
+        extraBox.Draw(refractionFirstPassShader);
+        refractionFirstPassShader.setMat4("model", extraModel);
+        box.Draw(refractionFirstPassShader);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, gReversedDepth, 0);
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+#pragma endregion
 #pragma endregion
 
 #pragma region Lighting pass
@@ -283,8 +343,13 @@ int main()
                 break;
             }
             case 3:
-                depthBufferDebugShader.use();
+                reversedDepthBufferDebugShader.use();
                 glActiveTexture(GL_TEXTURE3);
+                glBindTexture(GL_TEXTURE_2D, gReversedDepth);
+                break;
+            case 4:
+                depthBufferDebugShader.use();
+                glActiveTexture(GL_TEXTURE4);
                 glBindTexture(GL_TEXTURE_2D, gDepth);
                 break;
             default:
@@ -292,10 +357,6 @@ int main()
                 break;
             }
         }
-#pragma endregion
-
-#pragma region Refractive first pass
-
 #pragma endregion
 
         renderQuad();

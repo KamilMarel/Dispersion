@@ -3,7 +3,7 @@ out vec4 FragColor;
 
 in vec2 TexCoords;
 
-uniform sampler2D gDepth;
+uniform sampler2D gReversedDepth;
 
 float near = 0.1; 
 float far  = 100.0; 
@@ -16,6 +16,6 @@ float LinearizeDepth(float depth)
 
 void main()
 {             
-    float FragPos = LinearizeDepth(texture(gDepth, TexCoords).r) / far;
+    float FragPos = LinearizeDepth(texture(gReversedDepth, TexCoords).r) / far;
     FragColor = vec4(vec3(FragPos), 1.0);
 }

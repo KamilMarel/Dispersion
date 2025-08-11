@@ -170,6 +170,26 @@
     <ClInclude Include="include\Shader.h" />
     <ClInclude Include="include\Model.h" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="shaders\basic.frag" />
+    <None Include="shaders\basic.vert" />
+    <None Include="shaders\depthBufferDebug.frag" />
+    <None Include="shaders\depthBufferDebug.vert" />
+    <None Include="shaders\geometryPass.frag" />
+    <None Include="shaders\geometryPass.vert" />
+    <None Include="shaders\lightingPass.frag" />
+    <None Include="shaders\lightingPass.vert" />
+    <None Include="shaders\normalsBufferDebug.frag" />
+    <None Include="shaders\normalsBufferDebug.vert" />
+    <None Include="shaders\positionBufferDebug.frag" />
+    <None Include="shaders\positionBufferDebug.vert" />
+    <None Include="shaders\refractionFirstPass.frag" />
+    <None Include="shaders\refractionFirstPass.vert" />
+    <None Include="shaders\reversedDepthBufferDebug.frag" />
+    <None Include="shaders\reversedDepthBufferDebug.vert" />
+    <None Include="shaders\skybox.frag" />
+    <None Include="shaders\skybox.vert" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

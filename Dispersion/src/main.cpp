@@ -31,6 +31,8 @@ bool settingsEnabled = false;
 
 float lightPosition[3] = {0.0f, 2.0f, 0.0f};
 float lightColor[3] = {1.0f, 1.0f, 1.0f};
+int currentDebugOption = 0;
+const char* debugOptions[] = { "DISABLED", "POSITION", "NORMALS", "DEPTH"};
 
 int main()
 {
@@ -64,6 +66,9 @@ int main()
     Shader skyboxShader("shaders/skybox.vert", "shaders/skybox.frag");
     Shader geometryPassShader("shaders/geometryPass.vert", "shaders/geometryPass.frag");
     Shader lightingPassShader("shaders/lightingPass.vert", "shaders/lightingPass.frag");
+    Shader positionBufferDebugShader("shaders/positionBufferDebug.vert", "shaders/positionBufferDebug.frag");
+    Shader normalsBufferDebugShader("shaders/normalsBufferDebug.vert", "shaders/normalsBufferDebug.frag");
+    Shader depthBufferDebugShader("shaders/depthBufferDebug.vert", "shaders/depthBufferDebug.frag");
     Model box("models/box.obj");
 
     float skyboxVertices[] = {     
@@ -143,7 +148,7 @@ int main()
     unsigned int gBuffer;
     glGenFramebuffers(1, &gBuffer);
     glBindFramebuffer(GL_FRAMEBUFFER, gBuffer);
-    unsigned int gPosition, gNormal, gAlbedoSpec;
+    unsigned int gPosition, gNormal, gAlbedoSpec, gDepth;
 
     glGenTextures(1, &gPosition);
     glBindTexture(GL_TEXTURE_2D, gPosition);
@@ -166,28 +171,52 @@ int main()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, gAlbedoSpec, 0);
 
+    glGenTextures(1, &gDepth);
+    glBindTexture(GL_TEXTURE_2D, gDepth);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, SCR_WIDTH, SCR_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, gDepth, 0);
+
     unsigned int attachments[3] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
     glDrawBuffers(3, attachments);
 
-    unsigned int rboDepth;
+    /*unsigned int rboDepth;
     glGenRenderbuffers(1, &rboDepth);
     glBindRenderbuffer(GL_RENDERBUFFER, rboDepth);
     glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, SCR_WIDTH, SCR_HEIGHT);
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rboDepth);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rboDepth);*/
 
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
         std::cout << "Framebuffer not complete!" << std::endl;
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    positionBufferDebugShader.use();
+    positionBufferDebugShader.setInt("gPosition", 0);
+
+    normalsBufferDebugShader.use();
+    normalsBufferDebugShader.setInt("gNormal", 1);
+
+    depthBufferDebugShader.use();
+    depthBufferDebugShader.setInt("gDepth", 3);
 
     lightingPassShader.use();
     lightingPassShader.setInt("gPosition", 0);
     lightingPassShader.setInt("gNormal", 1);
     lightingPassShader.setInt("gAlbedoSpec", 2);
 
+    int fps = 0;
+    float fpsRefreshTimer = 0.0f;
     while (!glfwWindowShouldClose(window))
     {
         float currentFrame = static_cast<float>(glfwGetTime());
         deltaTime = currentFrame - lastFrame;
+        fpsRefreshTimer += deltaTime;
+        if (fpsRefreshTimer >= 0.1f)
+        {
+            fps = 1.0f / deltaTime;
+            fpsRefreshTimer  = 0.0f;
+        }
         lastFrame = currentFrame;
 
         processInput(window);
@@ -195,6 +224,7 @@ int main()
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+#pragma region Geometry pass
         glBindFramebuffer(GL_FRAMEBUFFER, gBuffer);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
@@ -207,7 +237,9 @@ int main()
         geometryPassShader.setMat4("model", model);
         box.Draw(geometryPassShader);
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
+#pragma endregion
 
+#pragma region Lighting pass
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         lightingPassShader.use();
         glActiveTexture(GL_TEXTURE0);
@@ -231,6 +263,40 @@ int main()
         lightingPassShader.setFloat("light.Radius", radius);
 
         lightingPassShader.setVec3("viewPos", camera.Position);
+#pragma endregion
+
+#pragma region Deferred shading debugging
+        switch (currentDebugOption)
+        {
+            case 0:
+            {
+                break;
+            }
+            case 1:
+            {
+                positionBufferDebugShader.use();
+                break;
+            }
+            case 2:
+            {
+                normalsBufferDebugShader.use();
+                break;
+            }
+            case 3:
+                depthBufferDebugShader.use();
+                glActiveTexture(GL_TEXTURE3);
+                glBindTexture(GL_TEXTURE_2D, gDepth);
+                break;
+            default:
+            {
+                break;
+            }
+        }
+#pragma endregion
+
+#pragma region Refractive first pass
+
+#pragma endregion
 
         renderQuad();
 
@@ -268,10 +334,11 @@ int main()
             ImGui_ImplOpenGL3_NewFrame();
             ImGui_ImplGlfw_NewFrame();
             ImGui::NewFrame();
-
             {
                 ImGui::Begin("Settings");
 
+                ImGui::Text((std::to_string(fps) + " FPS").c_str());
+                ImGui::Combo("Deferred shading debug", &currentDebugOption, debugOptions, IM_ARRAYSIZE(debugOptions));
                 ImGui::InputFloat3("Light position", lightPosition);
                 ImGui::ColorEdit3("Light color", lightColor);
 

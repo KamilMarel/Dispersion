@@ -115,5 +115,11 @@
     <None Include="shaders\reversedDepthBufferDebug.vert" />
     <None Include="shaders\skybox.frag" />
     <None Include="shaders\skybox.vert" />
+    <None Include="shaders\normalBackDebug.frag" />
+    <None Include="shaders\normalBackDebug.vert" />
+    <None Include="shaders\normalFrontDebug.frag" />
+    <None Include="shaders\normalFrontDebug.vert" />
+    <None Include="shaders\refractionSecondPass.frag" />
+    <None Include="shaders\refractionSecondPass.vert" />
   </ItemGroup>
 </Project>

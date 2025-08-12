@@ -32,7 +32,7 @@ bool settingsEnabled = false;
 float lightPosition[3] = {0.0f, 2.0f, 0.0f};
 float lightColor[3] = {1.0f, 1.0f, 1.0f};
 int currentDebugOption = 0;
-const char* debugOptions[] = { "DISABLED", "POSITION", "NORMALS", "REVERSED_DEPTH", "DEPTH"};
+const char* debugOptions[] = { "DISABLED", "POSITION", "NORMALS", "REVERSED_DEPTH", "DEPTH", "NORMAL_BACK", "NORMAL_FRONT"};
 
 int main()
 {
@@ -66,11 +66,14 @@ int main()
     Shader skyboxShader("shaders/skybox.vert", "shaders/skybox.frag");
     Shader geometryPassShader("shaders/geometryPass.vert", "shaders/geometryPass.frag");
     Shader refractionFirstPassShader("shaders/refractionFirstPass.vert", "shaders/refractionFirstPass.frag");
+    Shader refractionSecondPassShader("shaders/refractionSecondPass.vert", "shaders/refractionSecondPass.frag");
     Shader lightingPassShader("shaders/lightingPass.vert", "shaders/lightingPass.frag");
     Shader positionBufferDebugShader("shaders/positionBufferDebug.vert", "shaders/positionBufferDebug.frag");
     Shader normalsBufferDebugShader("shaders/normalsBufferDebug.vert", "shaders/normalsBufferDebug.frag");
     Shader reversedDepthBufferDebugShader("shaders/reversedDepthBufferDebug.vert", "shaders/reversedDepthBufferDebug.frag");
     Shader depthBufferDebugShader("shaders/depthBufferDebug.vert", "shaders/depthBufferDebug.frag");
+    Shader normalBackDebugShader("shaders/normalBackDebug.vert", "shaders/normalBackDebug.frag");
+    Shader normalFrontDebugShader("shaders/normalFrontDebug.vert", "shaders/normalFrontDebug.frag");
     Model box("models/box.obj");
     Model extraBox("models/box.obj");
 
@@ -201,19 +204,34 @@ int main()
     unsigned int refractionBuffer;
     glGenFramebuffers(1, &refractionBuffer);
     glBindFramebuffer(GL_FRAMEBUFFER, refractionBuffer);
-    unsigned int gReversedDepth, gDepth;
+    unsigned int rReversedDepth, rDepth, rNormalBack, rNormalFront;
 
-    glGenTextures(1, &gReversedDepth);
-    glBindTexture(GL_TEXTURE_2D, gReversedDepth);
+    glGenTextures(1, &rNormalBack);
+    glBindTexture(GL_TEXTURE_2D, rNormalBack);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGBA, GL_FLOAT, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, rNormalBack, 0);
+
+    glGenTextures(1, &rNormalFront);
+    glBindTexture(GL_TEXTURE_2D, rNormalFront);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGBA, GL_FLOAT, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, rNormalFront, 0);
+
+    unsigned int refractionAttachments[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
+    glDrawBuffers(2, refractionAttachments);
+
+    glGenTextures(1, &rReversedDepth);
+    glBindTexture(GL_TEXTURE_2D, rReversedDepth);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, SCR_WIDTH, SCR_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, gReversedDepth, 0);
-    glDrawBuffer(GL_NONE);
-    glReadBuffer(GL_NONE);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, rReversedDepth, 0);
 
-    glGenTextures(1, &gDepth);
-    glBindTexture(GL_TEXTURE_2D, gDepth);
+    glGenTextures(1, &rDepth);
+    glBindTexture(GL_TEXTURE_2D, rDepth);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, SCR_WIDTH, SCR_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -227,6 +245,12 @@ int main()
 
     depthBufferDebugShader.use();
     depthBufferDebugShader.setInt("gDepth", 4);
+
+    normalBackDebugShader.use();
+    normalBackDebugShader.setInt("rNormalBack", 5);
+
+    normalFrontDebugShader.use();
+    normalFrontDebugShader.setInt("rNormalFront", 6);
 
     int fps = 0;
     float fpsRefreshTimer = 0.0f;
@@ -267,8 +291,10 @@ int main()
 #pragma endregion
         
 #pragma region Refraction passes
+
 #pragma region Refraction first pass
         glBindFramebuffer(GL_FRAMEBUFFER, refractionBuffer);
+        glDrawBuffer(GL_COLOR_ATTACHMENT0);
         glClearDepth(0.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glDepthFunc(GL_GREATER);
@@ -283,20 +309,23 @@ int main()
         glClearDepth(1.0f);
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 #pragma endregion
+
 #pragma region Refraction second pass
         glBindFramebuffer(GL_FRAMEBUFFER, refractionBuffer);
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, gDepth, 0);
+        glDrawBuffer(GL_COLOR_ATTACHMENT1);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, rDepth, 0);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        refractionFirstPassShader.use();
-        refractionFirstPassShader.setMat4("projection", projection);
-        refractionFirstPassShader.setMat4("view", view);
-        refractionFirstPassShader.setMat4("model", model);
-        extraBox.Draw(refractionFirstPassShader);
-        refractionFirstPassShader.setMat4("model", extraModel);
-        box.Draw(refractionFirstPassShader);
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, gReversedDepth, 0);
+        refractionSecondPassShader.use();
+        refractionSecondPassShader.setMat4("projection", projection);
+        refractionSecondPassShader.setMat4("view", view);
+        refractionSecondPassShader.setMat4("model", model);
+        extraBox.Draw(refractionSecondPassShader);
+        refractionSecondPassShader.setMat4("model", extraModel);
+        box.Draw(refractionSecondPassShader);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, rReversedDepth, 0);
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 #pragma endregion
+
 #pragma endregion
 
 #pragma region Lighting pass
@@ -345,12 +374,22 @@ int main()
             case 3:
                 reversedDepthBufferDebugShader.use();
                 glActiveTexture(GL_TEXTURE3);
-                glBindTexture(GL_TEXTURE_2D, gReversedDepth);
+                glBindTexture(GL_TEXTURE_2D, rReversedDepth);
                 break;
             case 4:
                 depthBufferDebugShader.use();
                 glActiveTexture(GL_TEXTURE4);
-                glBindTexture(GL_TEXTURE_2D, gDepth);
+                glBindTexture(GL_TEXTURE_2D, rDepth);
+                break;
+            case 5:
+                normalBackDebugShader.use();
+                glActiveTexture(GL_TEXTURE5);
+                glBindTexture(GL_TEXTURE_2D, rNormalBack);
+                break;
+            case 6:
+                normalFrontDebugShader.use();
+                glActiveTexture(GL_TEXTURE6);
+                glBindTexture(GL_TEXTURE_2D, rNormalFront);
                 break;
             default:
             {

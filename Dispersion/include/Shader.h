@@ -14,7 +14,7 @@ class Shader
 public:
     unsigned int ID;
 
-    Shader(const char* vertexPath, const char* fragmentPath, const char* geometryPath = nullptr)
+    Shader(const char* vertexPath, const char* fragmentPath, const char* geometryPath = nullptr, bool useTransformFeedback = false)
     {
         std::string vertexCode;
         std::string fragmentCode;
@@ -56,10 +56,13 @@ public:
         glShaderSource(vertex, 1, &vShaderCode, NULL);
         glCompileShader(vertex);
         checkCompileErrors(vertex, "VERTEX");
-        fragment = glCreateShader(GL_FRAGMENT_SHADER);
-        glShaderSource(fragment, 1, &fShaderCode, NULL);
-        glCompileShader(fragment);
-        checkCompileErrors(fragment, "FRAGMENT");
+        if (!useTransformFeedback)
+        {
+            fragment = glCreateShader(GL_FRAGMENT_SHADER);
+            glShaderSource(fragment, 1, &fShaderCode, NULL);
+            glCompileShader(fragment);
+            checkCompileErrors(fragment, "FRAGMENT");
+        }
         unsigned int geometry;
         if (geometryPath != nullptr)
         {
@@ -71,13 +74,25 @@ public:
         }
         ID = glCreateProgram();
         glAttachShader(ID, vertex);
-        glAttachShader(ID, fragment);
+        if(!useTransformFeedback)
+            glAttachShader(ID, fragment);
         if (geometryPath != nullptr)
             glAttachShader(ID, geometry);
-        glLinkProgram(ID);
-        checkCompileErrors(ID, "PROGRAM");
+
+        if (useTransformFeedback)
+        {
+            const GLchar* feedbackVaryings[] = { "outValue" };
+            glTransformFeedbackVaryings(ID, 1, feedbackVaryings, GL_INTERLEAVED_ATTRIBS);
+            glLinkProgram(ID);
+        }
+        else
+        {
+            glLinkProgram(ID);
+            checkCompileErrors(ID, "PROGRAM");
+        }
         glDeleteShader(vertex);
-        glDeleteShader(fragment);
+        if(!useTransformFeedback)
+            glDeleteShader(fragment);
         if (geometryPath != nullptr)
             glDeleteShader(geometry);
     }
@@ -100,6 +115,11 @@ public:
     void setFloat(const std::string& name, float value) const
     {
         glUniform1f(glGetUniformLocation(ID, name.c_str()), value);
+    }
+
+    void setFloatX(const std::string& name, int size, float* values)
+    {
+        glUniform1fv(glGetUniformLocation(ID, name.c_str()), size, values);
     }
 
     void setVec2(const std::string& name, const glm::vec2& value) const

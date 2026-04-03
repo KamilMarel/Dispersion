@@ -100,14 +100,16 @@ public:
             Zoom = 45.0f;
     }
 
-private:
-    void updateCameraVectors()
+    void updateCameraVectors(bool keepFront = false)
     {
-        glm::vec3 front;
-        front.x = cos(glm::radians(Yaw)) * cos(glm::radians(Pitch));
-        front.y = sin(glm::radians(Pitch));
-        front.z = sin(glm::radians(Yaw)) * cos(glm::radians(Pitch));
-        Front = glm::normalize(front);
+        if (!keepFront)
+        {
+            glm::vec3 front;
+            front.x = cos(glm::radians(Yaw)) * cos(glm::radians(Pitch));
+            front.y = sin(glm::radians(Pitch));
+            front.z = sin(glm::radians(Yaw)) * cos(glm::radians(Pitch));
+            Front = glm::normalize(front);
+        }
         Right = glm::normalize(glm::cross(Front, WorldUp));
         Up = glm::normalize(glm::cross(Right, Front));
     }

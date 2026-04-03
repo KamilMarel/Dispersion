@@ -21,18 +21,6 @@
     <ClCompile Include="src\main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\Model.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Shader.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Mesh.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Camera.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\imgui\imgui.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -99,27 +87,39 @@
   <ItemGroup>
     <None Include="shaders\basic.frag" />
     <None Include="shaders\basic.vert" />
-    <None Include="shaders\depthBufferDebug.frag" />
-    <None Include="shaders\depthBufferDebug.vert" />
     <None Include="shaders\geometryPass.frag" />
     <None Include="shaders\geometryPass.vert" />
     <None Include="shaders\lightingPass.frag" />
     <None Include="shaders\lightingPass.vert" />
-    <None Include="shaders\normalsBufferDebug.frag" />
-    <None Include="shaders\normalsBufferDebug.vert" />
-    <None Include="shaders\positionBufferDebug.frag" />
-    <None Include="shaders\positionBufferDebug.vert" />
     <None Include="shaders\refractionFirstPass.frag" />
     <None Include="shaders\refractionFirstPass.vert" />
-    <None Include="shaders\reversedDepthBufferDebug.frag" />
-    <None Include="shaders\reversedDepthBufferDebug.vert" />
     <None Include="shaders\skybox.frag" />
     <None Include="shaders\skybox.vert" />
-    <None Include="shaders\normalBackDebug.frag" />
-    <None Include="shaders\normalBackDebug.vert" />
-    <None Include="shaders\normalFrontDebug.frag" />
-    <None Include="shaders\normalFrontDebug.vert" />
     <None Include="shaders\refractionSecondPass.frag" />
     <None Include="shaders\refractionSecondPass.vert" />
+    <None Include="shaders\renderResultTest.vert" />
+    <None Include="shaders\renderResultTest.frag" />
+    <None Include="shaders\depthMap.frag" />
+    <None Include="shaders\depthMap.vert" />
+    <None Include="shaders\shadowMapping.frag" />
+    <None Include="shaders\shadowMapping.vert" />
+    <None Include="shaders\causticMappingFirstPass.frag" />
+    <None Include="shaders\causticMappingFirstPass.vert" />
+    <None Include="shaders\lightGeometryPass.frag" />
+    <None Include="shaders\lightGeometryPass.vert" />
+    <None Include="shaders\photonProcessing.frag" />
+    <None Include="shaders\photonProcessing.geom" />
+    <None Include="shaders\photonProcessing.vert" />
+    <None Include="shaders\photonSplatting.vert" />
+    <None Include="shaders\photonSplatting.frag" />
+    <None Include="shaders\photonSplatting.geom" />
+    <None Include="shaders\dispersionMapCreation.frag" />
+    <None Include="shaders\dispersionMapCreation.vert" />
+    <None Include="shaders\gaussianFilter.frag" />
+    <None Include="shaders\gaussianFilter.vert" />
+    <None Include="shaders\blanchetteGapFilling.frag" />
+    <None Include="shaders\blanchetteGapFilling.vert" />
+    <None Include="shaders\photonsToTexture.frag" />
+    <None Include="shaders\photonsToTexture.vert" />
   </ItemGroup>
 </Project>

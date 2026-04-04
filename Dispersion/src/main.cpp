@@ -37,7 +37,7 @@ float lastFrame = 0.0f;
 
 bool settingsEnabled = false;
 bool debugBackfaceNormals = false;
-bool dTildeFix = false;
+bool dTildeFix = true;
 
 float lightPosition[3] = {5.0f, 9.5f, 7.5f};
 float lightColor[3] = {1.0f, 1.0f, 1.0f};
@@ -46,7 +46,7 @@ float lightCutOff = 12.5f;
 float lightOuterCutOff = 17.5f;
 int currentDebugOption = 0;
 int currentGapFillingAlgorithm = 0;
-const char* debugOptions[] = { "DISABLED", "POSITION", "NORMALS", "REVERSED_DEPTH", "DEPTH", "NORMAL_BACK", "SHADOW_MAP", "PHOTON_POSITIONS", "DISPERSION_MAP", "PHOTONS", "BLURRED_DISPERSION_MAP", "BLANCHETTE_DISPERSION_MAP", "PHOTONS_TO_TEXTURE"};
+const char* debugOptions[] = { "DISABLED", "CAMERA_FRAGMENT_POSITIONS", "CAMERA_FRAGMENT_NORMALS", "CAMERA_REVERSED_DEPTH", "OPTION_NOT_USED", "CAMERA_BACKFACE_NORMALS", "SHADOW_MAP", "PURPLE_PHOTON_BUFFER", "DISPERSION_MAP_BEFORE_BLUR", "DISPERSION_MIPMAP", "BLURRED_DISPERSION_MAP", "BLANCHETTE_DISPERSION_MAP (visible only with Blanchette gap filling algorithm enabled)", "OPTION_NOT_USED"};
 float indexOfRefraction = 1.0f;
 float secondIndexOfRefraction = 1.0f;
 float thetaIClampValue = 3.1416f;
@@ -160,7 +160,7 @@ int main()
     //Model refractiveBox("models/box.obj");
     //Model solidBox("models/box.obj");
     //Model bunny("models/bunny.obj");
-    Model sphere("models/dragonScaled.obj");
+    Model sphere("models/box.obj");
     Model room("models/roomScaled.obj");
 
     float skyboxVertices[] = {     
@@ -1212,6 +1212,7 @@ int main()
             renderResultTestShader.setBool("depthDebug", true);
             break;
         case 4:
+            glBindTexture(GL_TEXTURE_2D, r2Result);
             break;
         case 5:
             glBindTexture(GL_TEXTURE_2D, rNormalBack);
@@ -1221,7 +1222,7 @@ int main()
             renderResultTestShader.setBool("depthDebug", true);
             break;
         case 7:
-            glBindTexture(GL_TEXTURE_2D, redPhotonLocations);
+            glBindTexture(GL_TEXTURE_2D, purplePhotonLocations);
             break;
         case 8:
             glBindTexture(GL_TEXTURE_2D, dispersionMap);
@@ -1239,7 +1240,7 @@ int main()
             glBindTexture(GL_TEXTURE_2D, blanchetteDispersionMap);
             break;
         case 12:
-            glBindTexture(GL_TEXTURE_2D, photonsToTexture);
+            glBindTexture(GL_TEXTURE_2D, r2Result);
             break;
         default:
         {
@@ -1265,50 +1266,61 @@ int main()
 
                 ImGui::Text((std::to_string(fps) + " FPS").c_str());
                 ImGui::Text((std::to_string(emittedLight) + " emitted light").c_str());
-                ImGui::Combo("Deferred shading debug", &currentDebugOption, debugOptions, IM_ARRAYSIZE(debugOptions));
-                ImGui::InputFloat3("Light position", lightPosition);
-                ImGui::InputFloat3("Light direction", lightDirection);
-                ImGui::InputFloat3("Test object position", testObjectPosition);
-                ImGui::ColorEdit3("Light color", lightColor);
-                ImGui::SliderFloat("Light Cut Off", &lightCutOff, 0.0f, 90.0f);
-                ImGui::SliderFloat("Light Outer Cut Off", &lightOuterCutOff, 0.0f, 90.0f);
-                ImGui::InputFloat("Index of refraction", &indexOfRefraction);
-                ImGui::SliderFloat ("Index of refraction step", &indexOfRefractionStep, 0.001f, 0.2f);
-                ImGui::InputFloat("Second index of refraction", &secondIndexOfRefraction);
-                ImGui::SliderFloat("Second index of refraction step", &secondIndexOfRefractionStep, 0.001f, 0.2f);
-                ImGui::InputFloat("ThetaI clamp value", &thetaIClampValue);
-                ImGui::Checkbox("Debug backface normals", &debugBackfaceNormals);
-                ImGui::Checkbox("D tilde fix", &dTildeFix);
-                ImGui::SliderInt("Dispersed photons map level", &dispersedPhotonsMapLevel, 0, 6);
-                ImGui::Checkbox("CCD Optimization", &ccdOptimizationEnabled);
-                ImGui::InputFloat("Test object rotation X", &testObjectRotationX);
-                ImGui::InputFloat("Test object rotation Y", &testObjectRotationY);
-                ImGui::SliderFloat("Test object rotation Z", &testObjectRotationZ, -180.0f, 180.0f);
-                switch (currentGapFillingAlgorithm)
+
+                if(ImGui::CollapsingHeader("Rendering settings"))
                 {
-                case 0:
-                {
-                    ImGui::Checkbox("Photon CCD based distance calculation", &photonCCDBasedDistanceCalculationEnabled);
-                    break;
-                } 
-                case 1:
-                {
-                    ImGui::InputFloat("Blanchette fetch radius", &blanchetteFetchRadius);
-                    ImGui::InputInt("Blanchette samples count", &blanchetteSamplesCount);
-                    ImGui::InputInt("Blanchette hit count threshold", &blanchetteHitCountThreshold);
-                    ImGui::SliderFloat("Blanchette color threshold", &blanchetteColorThreshold, 0.0f, 1.0f);
-                    break;
+                    ImGui::Combo("Rendering debug", &currentDebugOption, debugOptions, IM_ARRAYSIZE(debugOptions));
+                    if (currentDebugOption == 9)
+                    {
+                        ImGui::SliderInt("Dispersion mipmap level", &dispersedPhotonsMapLevel, 0, 6);
+                    }
+
+                    ImGui::InputFloat("First interface ratio of indices", &indexOfRefraction);
+                    ImGui::SliderFloat("First interface calculation step", &indexOfRefractionStep, 0.001f, 0.2f);
+                    ImGui::InputFloat("Second interface ratio of indices", &secondIndexOfRefraction);
+                    ImGui::SliderFloat("Second interface calculation step", &secondIndexOfRefractionStep, 0.001f, 0.2f);
+                    ImGui::Checkbox("Debug refraction second pass backface normals", &debugBackfaceNormals);
+                    ImGui::Checkbox("Refraction second pass backface normals fix", &dTildeFix);
+                    ImGui::Checkbox("CCD Optimization", &ccdOptimizationEnabled);
+                    switch (currentGapFillingAlgorithm)
+                    {
+                    case 0:
+                    {
+                        ImGui::Checkbox("Photon CCD based distance calculation", &photonCCDBasedDistanceCalculationEnabled);
+                        break;
+                    }
+                    case 1:
+                    {
+                        ImGui::InputFloat("Blanchette fetch radius", &blanchetteFetchRadius);
+                        ImGui::InputInt("Blanchette samples count", &blanchetteSamplesCount);
+                        ImGui::InputInt("Blanchette hit count threshold", &blanchetteHitCountThreshold);
+                        ImGui::SliderFloat("Blanchette color threshold", &blanchetteColorThreshold, 0.0f, 1.0f);
+                        break;
+                    }
+                    default:
+                        break;
+                    }
+
+                    ImGui::Combo("Gap filling algorithm", &currentGapFillingAlgorithm, gapFillingAlgorithms, IM_ARRAYSIZE(gapFillingAlgorithms));
+                    ImGui::Checkbox("Use custom solid angle", &useCustomSolidAngle);
+                    if (useCustomSolidAngle)
+                    {
+                        ImGui::SliderFloat("Custom solid angle", &customSolidAngle, 0.0000001f, 0.000005f, "%.7f");
+                    }
                 }
-                default:
-                    break;
-                }
-                    
-                
-                ImGui::Combo("Gap filling algorithm", &currentGapFillingAlgorithm, gapFillingAlgorithms, IM_ARRAYSIZE(gapFillingAlgorithms));
-                ImGui::Checkbox("Use custom solid angle", &useCustomSolidAngle);
-                if (useCustomSolidAngle)
+
+                if (ImGui::CollapsingHeader("Scene settings"))
                 {
-                    ImGui::SliderFloat("Custom solid angle", &customSolidAngle, 0.0000001f, 0.000005f, "%.7f");
+                    ImGui::InputFloat3("Light position", lightPosition);
+                    ImGui::InputFloat3("Light direction", lightDirection);
+                    ImGui::ColorEdit3("Light color", lightColor);
+                    ImGui::SliderFloat("Light Cut Off", &lightCutOff, 0.0f, 90.0f);
+                    ImGui::SliderFloat("Light Outer Cut Off", &lightOuterCutOff, 0.0f, 90.0f);
+                    ImGui::Text("");
+                    ImGui::InputFloat3("Test object position", testObjectPosition);
+                    ImGui::SliderFloat("Test object rotation X", &testObjectRotationX, -180.0f, 180.0f);
+                    ImGui::SliderFloat("Test object rotation Y", &testObjectRotationY, -180.0f, 180.0f);
+                    ImGui::SliderFloat("Test object rotation Z", &testObjectRotationZ, -180.0f, 180.0f);
                 }
 
                 ImGui::End();

@@ -66,8 +66,6 @@ bool useCustomSolidAngle = false;
 float customSolidAngle = 0.000003f;
 float indexOfRefractionStep = 0.1f;
 float secondIndexOfRefractionStep = 0.1f;
-float n1 = 1.0f;
-float n2 = 1.0f;
 
 int main()
 {
@@ -833,8 +831,6 @@ int main()
             glActiveTexture(GL_TEXTURE2);
             glBindTexture(GL_TEXTURE_2D, lgPositions);
             refractionSecondPassShader.use();
-            refractionSecondPassShader.setFloat("n1", n1);
-            refractionSecondPassShader.setFloat("n2", n2);
             refractionSecondPassShader.setVec3("viewPos", lightPositionVec);
             refractionSecondPassShader.setVec3("cameraLookAtVector", lightDirectionVec);
             refractionSecondPassShader.setVec2("viewportSize", glm::vec2(SCR_WIDTH, SCR_HEIGHT));
@@ -1163,8 +1159,6 @@ int main()
         glActiveTexture(GL_TEXTURE2);
         glBindTexture(GL_TEXTURE_2D, afterLightingPass);
         refractionSecondPassShader.use();
-        refractionSecondPassShader.setFloat("n1", n1);
-        refractionSecondPassShader.setFloat("n2", n2);
         refractionSecondPassShader.setVec3("viewPos", camera.Position);
         refractionSecondPassShader.setVec3("cameraLookAtVector", camera.Front);
         refractionSecondPassShader.setVec2("viewportSize", glm::vec2(SCR_WIDTH, SCR_HEIGHT));
@@ -1272,8 +1266,6 @@ int main()
                 ImGui::Text((std::to_string(fps) + " FPS").c_str());
                 ImGui::Text((std::to_string(emittedLight) + " emitted light").c_str());
                 ImGui::Combo("Deferred shading debug", &currentDebugOption, debugOptions, IM_ARRAYSIZE(debugOptions));
-                ImGui::InputFloat("n1", &n1);
-                ImGui::InputFloat("n2", &n2);
                 ImGui::InputFloat3("Light position", lightPosition);
                 ImGui::InputFloat3("Light direction", lightDirection);
                 ImGui::InputFloat3("Test object position", testObjectPosition);

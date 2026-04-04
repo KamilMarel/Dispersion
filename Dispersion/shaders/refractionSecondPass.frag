@@ -28,9 +28,6 @@ uniform float indexOfRefraction;
 uniform float secondIndexOfRefraction;
 uniform float thetaIClampValue;
 
-uniform float n1 = 1.0f;
-uniform float n2 = 1.0f;
-
 uniform bool debugBackfaceNormals;
 uniform bool dTildeFix;
 

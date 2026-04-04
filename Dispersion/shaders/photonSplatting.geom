@@ -405,28 +405,37 @@ void main()
 		}
 	}
 
+	float Di = 2 * ri;
+	if(!blanchetteGapFillingOverride)
+	{
+		if(Di < maxDistance)
+		{
+			Di = maxDistance;
+		}
+	}
+	int photonMipmapLevel = int( trunc( log2( max(1.0f, Di / 7.0f) ) ) );
+	float rawSplatSize = Di / pow(2, photonMipmapLevel);
+
+	int correctSplatSize = getCorrectSplatSize(rawSplatSize);
+	if(correctSplatSize > 7)
+	{
+		correctSplatSize = 7;
+	}
+
+	vec4 offsetForMipmapLevel = vec4(0.0f, 0.0f, 0.0f, 0.0f);
+	for(int level = 1; level <= photonMipmapLevel; level++)
+	{
+		offsetForMipmapLevel -= vec4(1.0f / pow(2.0f, level),
+									    1.0f / pow(2.0f, level),
+										0.0f,
+										0.0f);
+	}
+
 	for(int i = 0; i < 7; i++)
 	{
 		if(ccdOptimizationEnabled && optimizationSkip[i])
 		{
 			continue;
-		}
-
-		float Di = 2 * ri;
-		if(!blanchetteGapFillingOverride)
-		{
-			if(Di < maxDistance)
-			{
-				Di = maxDistance;
-			}
-		}
-		int photonMipmapLevel = int( trunc( log2( max(1.0f, Di / 7.0f) ) ) );
-		float rawSplatSize = Di / pow(2, photonMipmapLevel);
-
-		int correctSplatSize = getCorrectSplatSize(rawSplatSize);
-		if(correctSplatSize > 7)
-		{
-			correctSplatSize = 7;
 		}
 		gl_PointSize = correctSplatSize;
 		splatSize = correctSplatSize;
@@ -438,14 +447,7 @@ void main()
 			finalPosition /= pow(2.0f, photonMipmapLevel);
 			finalPosition.w = 1.0f;
 		}
-		vec4 offsetForMipmapLevel = vec4(0.0f, 0.0f, 0.0f, 0.0f);
-		for(int level = 1; level <= photonMipmapLevel; level++)
-		{
-			offsetForMipmapLevel -= vec4(1.0f / pow(2.0f, level),
-									     1.0f / pow(2.0f, level),
-										 0.0f,
-										 0.0f);
-		}
+
 		finalPosition += offsetForMipmapLevel;
 
 		vec2 finalScreenPos = vec2( ((viewportSize.x / 2.0f) * finalPosition.x) + (viewportSize.x / 2.0f),

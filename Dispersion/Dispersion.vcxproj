@@ -152,7 +152,6 @@
     <ClCompile Include="src\imgui\imgui_tables.cpp" />
     <ClCompile Include="src\imgui\imgui_widgets.cpp" />
     <ClCompile Include="src\main.cpp" />
-    <ClCompile Include="src\oldMain.cpp" />
     <ClCompile Include="src\glad\glad.c" />
   </ItemGroup>
   <ItemGroup>

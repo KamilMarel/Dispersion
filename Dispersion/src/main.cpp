@@ -3,6 +3,7 @@
 #include <iostream>
 #define STB_IMAGE_IMPLEMENTATION
 #include "Camera.h"
+#include "Model.h"
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
@@ -39,8 +40,6 @@ float fpsRefreshTimer = 0.0f;
 
 #pragma endregion
 
-
-
 void framebufferSizeCallback(GLFWwindow* window, int width, int height);
 void mouseCallback(GLFWwindow* window, double xpos, double ypos);
 void scrollCallback(GLFWwindow* window, double xoffset, double yoffset);
@@ -48,6 +47,7 @@ void processInput(GLFWwindow* window);
 
 int main()
 {
+#pragma region Libraries initialization
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -60,6 +60,7 @@ int main()
         glfwTerminate();
         return -1;
     }
+
     glfwMakeContextCurrent(window);
     glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
     glfwSetCursorPosCallback(window, mouseCallback);
@@ -72,15 +73,19 @@ int main()
         return -1;
     }
 
-    glEnable(GL_DEPTH_TEST);
-    glEnable(GL_PROGRAM_POINT_SIZE);
-
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO(); (void)io;
     ImGui::StyleColorsDark();
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init("#version 330");
+#pragma endregion
+
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_PROGRAM_POINT_SIZE);
+
+    Model testObject("models/box.obj");
+    Model testRoom("models/roomScaled.obj");
 
     while (!glfwWindowShouldClose(window))
     {
@@ -93,7 +98,7 @@ int main()
             fpsRefreshTimer = 0.0f;
         }
         lastFrame = currentFrame;
-
+        
         processInput(window);
 
         glClearColor(1.0f, 1.0f, 1.0f, 1.0f);

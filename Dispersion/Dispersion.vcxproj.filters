@@ -45,6 +45,12 @@
     <ClCompile Include="src\main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\RenderPass\RenderPass.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RenderPass\DeferredShadingPass.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\Mesh.h">
@@ -89,14 +95,23 @@
     <ClInclude Include="include\Framebuffer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\RenderPass\RenderPass.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\RenderPass\DeferredShadingPass.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Spotlight.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\basic.frag" />
     <None Include="shaders\basic.vert" />
-    <None Include="shaders\geometryPass.frag" />
-    <None Include="shaders\geometryPass.vert" />
-    <None Include="shaders\lightingPass.frag" />
-    <None Include="shaders\lightingPass.vert" />
+    <None Include="shaders\RenderPass\DeferredShadingPass\cameraGeometryPass.frag" />
+    <None Include="shaders\RenderPass\DeferredShadingPass\cameraGeometryPass.vert" />
+    <None Include="shaders\RenderPass\DeferredShadingPass\cameraLightingPass.frag" />
+    <None Include="shaders\RenderPass\DeferredShadingPass\cameraLightingPass.vert" />
     <None Include="shaders\refractionFirstPass.frag" />
     <None Include="shaders\refractionFirstPass.vert" />
     <None Include="shaders\skybox.frag" />
@@ -111,8 +126,8 @@
     <None Include="shaders\shadowMapping.vert" />
     <None Include="shaders\causticMappingFirstPass.frag" />
     <None Include="shaders\causticMappingFirstPass.vert" />
-    <None Include="shaders\lightGeometryPass.frag" />
-    <None Include="shaders\lightGeometryPass.vert" />
+    <None Include="shaders\RenderPass\DeferredShadingPass\spotlightGeometryPass.frag" />
+    <None Include="shaders\RenderPass\DeferredShadingPass\spotlightGeometryPass.vert" />
     <None Include="shaders\photonProcessing.frag" />
     <None Include="shaders\photonProcessing.geom" />
     <None Include="shaders\photonProcessing.vert" />

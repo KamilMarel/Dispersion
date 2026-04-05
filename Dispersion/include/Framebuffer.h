@@ -4,7 +4,6 @@
 class Framebuffer
 {
 public:
-	Framebuffer();
 	Framebuffer(unsigned int attachmentsWidth,
 				unsigned int attachmentsHeight);
 	~Framebuffer();

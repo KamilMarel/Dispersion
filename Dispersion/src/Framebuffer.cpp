@@ -1,10 +1,5 @@
 #include "Framebuffer.h"
 
-Framebuffer::Framebuffer() : attachmentsWidth(1024), attachmentsHeight(1024)
-{
-	glGenFramebuffers(1, &ID);
-}
-
 Framebuffer::Framebuffer(unsigned int attachmentsWidth, unsigned int attachmentsHeight) : attachmentsWidth(attachmentsWidth), attachmentsHeight(attachmentsHeight)
 {
 	glGenFramebuffers(1, &ID);

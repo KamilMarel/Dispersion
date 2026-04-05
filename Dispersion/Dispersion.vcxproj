@@ -143,6 +143,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\RenderPass\DeferredShadingPass.cpp" />
+    <ClCompile Include="src\RenderPass\RenderPass.cpp" />
     <ClCompile Include="src\Framebuffer.cpp" />
     <ClCompile Include="src\imgui\imgui.cpp" />
     <ClCompile Include="src\imgui\imgui_demo.cpp" />
@@ -155,6 +157,7 @@
     <ClCompile Include="src\glad\glad.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\RenderPass\DeferredShadingPass.h" />
     <ClInclude Include="include\Framebuffer.h" />
     <ClInclude Include="include\Camera.h" />
     <ClInclude Include="include\imgui\imconfig.h" />
@@ -169,6 +172,8 @@
     <ClInclude Include="include\Mesh.h" />
     <ClInclude Include="include\Shader.h" />
     <ClInclude Include="include\Model.h" />
+    <ClInclude Include="include\RenderPass\RenderPass.h" />
+    <ClInclude Include="include\Spotlight.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\basic.frag" />
@@ -183,12 +188,12 @@
     <None Include="shaders\dispersionMapCreation.vert" />
     <None Include="shaders\gaussianFilter.frag" />
     <None Include="shaders\gaussianFilter.vert" />
-    <None Include="shaders\geometryPass.frag" />
-    <None Include="shaders\geometryPass.vert" />
-    <None Include="shaders\lightGeometryPass.frag" />
-    <None Include="shaders\lightGeometryPass.vert" />
-    <None Include="shaders\lightingPass.frag" />
-    <None Include="shaders\lightingPass.vert" />
+    <None Include="shaders\RenderPass\DeferredShadingPass\cameraGeometryPass.frag" />
+    <None Include="shaders\RenderPass\DeferredShadingPass\cameraGeometryPass.vert" />
+    <None Include="shaders\RenderPass\DeferredShadingPass\spotlightGeometryPass.frag" />
+    <None Include="shaders\RenderPass\DeferredShadingPass\spotlightGeometryPass.vert" />
+    <None Include="shaders\RenderPass\DeferredShadingPass\cameraLightingPass.frag" />
+    <None Include="shaders\RenderPass\DeferredShadingPass\cameraLightingPass.vert" />
     <None Include="shaders\photonProcessing.frag" />
     <None Include="shaders\photonProcessing.geom" />
     <None Include="shaders\photonProcessing.vert" />

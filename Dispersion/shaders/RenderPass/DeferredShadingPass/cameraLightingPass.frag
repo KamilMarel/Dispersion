@@ -1,13 +1,11 @@
 #version 330 core
-layout (location = 0) out vec3 afterLightingPass;
-
-// out vec4 FragColor;
+layout (location = 0) out vec3 deferredShadingPassResult;
 
 in vec2 TexCoords;
 
 uniform sampler2D gPosition;
 uniform sampler2D gNormal;
-uniform sampler2D gAlbedoSpec;
+uniform sampler2D gAlbedo;
 uniform sampler2D shadowMap;
 uniform sampler2D causticMap;
 
@@ -68,8 +66,8 @@ void main()
 {         
     vec3 FragPos = texture(gPosition, TexCoords).rgb;
     vec3 Normal = texture(gNormal, TexCoords).rgb;
-    vec3 Diffuse = texture(gAlbedoSpec, TexCoords).rgb;
-    float Specular = texture(gAlbedoSpec, TexCoords).a;
+    vec3 Diffuse = texture(gAlbedo, TexCoords).rgb;
+    float Specular = texture(gAlbedo, TexCoords).a;
     
     vec3 lighting  = Diffuse * 0.1;
     vec3 viewDir  = normalize(viewPos - FragPos);
@@ -96,5 +94,5 @@ void main()
     lighting += (1.0 - shadow) * (diffuse + specular);
     lighting += DispersionCalculation((light.SpaceMatrix * vec4(FragPos, 1.0))).rgb;
 
-    afterLightingPass = lighting;
+    deferredShadingPassResult = lighting;
 }

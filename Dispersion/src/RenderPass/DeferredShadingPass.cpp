@@ -25,7 +25,19 @@ DeferredShadingPass::~DeferredShadingPass()
 {
 }
 
-void DeferredShadingPass::execute(unsigned int amountOfObjectsToDraw, Model* objectsToDraw, Spotlight& sceneLight)
+void DeferredShadingPass::execute(SceneGraphNode* sceneRoot, glm::mat4& cameraView, glm::mat4& cameraProjection, Spotlight& sceneLight)
 {
+	gBuffer.bind();
 
+	cameraGeometryPassShader.use();
+	cameraGeometryPassShader.setMat4("view", cameraView);
+	cameraGeometryPassShader.setMat4("projection", cameraProjection);
+	sceneRoot->render(glm::mat4(1.0f), true, cameraGeometryPassShader);
+
+	gBuffer.unbind();
+}
+
+std::vector<unsigned int> DeferredShadingPass::getOutputTextures()
+{
+	return std::vector<unsigned int>();
 }

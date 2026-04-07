@@ -25,7 +25,7 @@ void SceneGraphNode::addChild(SceneGraphNode* nodeToAdd)
 	children.push_back(nodeToAdd);
 }
 
-void SceneGraphNode::render(glm::mat4& parentTransform, bool parentTransformIsDirty, Shader& renderingShader)
+void SceneGraphNode::render(const glm::mat4& parentTransform, bool parentTransformIsDirty, Shader& renderingShader)
 {
 	bool dirtyFlag = parentTransformIsDirty;
 	dirtyFlag |= dirtyTransform;

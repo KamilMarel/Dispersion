@@ -8,6 +8,8 @@ public:
 				unsigned int attachmentsHeight);
 	~Framebuffer();
 
+	void bind();
+	void unbind();
 	void addTextureColorAttachment();
 	const std::vector<unsigned int>& getTextureColorAttachments() const;
 private:

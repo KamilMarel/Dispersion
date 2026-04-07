@@ -11,6 +11,16 @@ Framebuffer::~Framebuffer()
 	glDeleteTextures(textureColorAttachments.size(), textureColorAttachments.data());
 }
 
+void Framebuffer::bind()
+{
+	glBindFramebuffer(GL_FRAMEBUFFER, ID);
+}
+
+void Framebuffer::unbind()
+{
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
 void Framebuffer::addTextureColorAttachment()
 {
 	glBindFramebuffer(GL_FRAMEBUFFER, ID);

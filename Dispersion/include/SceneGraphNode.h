@@ -9,7 +9,7 @@ public:
 
 	void addChild(SceneGraphNode* nodeToAdd);
 
-	void render(glm::mat4& parentTransform, bool parentTransformIsDirty, Shader& renderingShader);
+	void render(const glm::mat4& parentTransform, bool parentTransformIsDirty, Shader& renderingShader);
 
 	void translate(const glm::vec3& translation);
 	void rotate(const glm::vec3& rotationAxis, float angle);

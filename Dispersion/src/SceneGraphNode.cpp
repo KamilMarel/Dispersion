@@ -20,6 +20,11 @@ SceneGraphNode::~SceneGraphNode()
 	}
 }
 
+void SceneGraphNode::addChild(SceneGraphNode* nodeToAdd)
+{
+	children.push_back(nodeToAdd);
+}
+
 void SceneGraphNode::render(glm::mat4& parentTransform, bool parentTransformIsDirty, Shader& renderingShader)
 {
 	bool dirtyFlag = parentTransformIsDirty;
@@ -36,8 +41,23 @@ void SceneGraphNode::render(glm::mat4& parentTransform, bool parentTransformIsDi
 		objectModel->Draw(renderingShader);
 	}
 
-	for (SceneGraphNode child : children)
+	for (SceneGraphNode* child : children)
 	{
-		child.render(transform, dirtyFlag, renderingShader);
+		child->render(transform, dirtyFlag, renderingShader);
 	}
+}
+
+void SceneGraphNode::translate(const glm::vec3& translation)
+{
+	transform = glm::translate(transform, translation);
+}
+
+void SceneGraphNode::rotate(const glm::vec3& rotationAxis, float angle)
+{
+	transform = glm::rotate(transform, angle, rotationAxis);
+}
+
+void SceneGraphNode::scale(const glm::vec3& scale)
+{
+	transform = glm::scale(transform, scale);
 }

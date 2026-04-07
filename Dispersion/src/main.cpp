@@ -3,7 +3,7 @@
 #include <iostream>
 #define STB_IMAGE_IMPLEMENTATION
 #include "Camera.h"
-#include "Model.h"
+#include "SceneGraphNode.h"
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
@@ -47,7 +47,7 @@ void processInput(GLFWwindow* window);
 
 int main()
 {
-#pragma region Libraries initialization
+#pragma region Libraries initialization and window creation
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -81,11 +81,18 @@ int main()
     ImGui_ImplOpenGL3_Init("#version 330");
 #pragma endregion
 
+#pragma region OpenGL functions setup
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_PROGRAM_POINT_SIZE);
+#pragma endregion
 
-    Model testObject("models/box.obj");
-    Model testRoom("models/roomScaled.obj");
+#pragma region Scene setup
+    SceneGraphNode sceneRoot;
+    SceneGraphNode testObject("models/box.obj");
+    SceneGraphNode testRoom("models/roomScaled.obj");
+    sceneRoot.addChild(&testObject);
+    sceneRoot.addChild(&testRoom);
+#pragma endregion
 
     while (!glfwWindowShouldClose(window))
     {
@@ -103,6 +110,8 @@ int main()
 
         glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+
 
         if (settingsEnabled)
         {

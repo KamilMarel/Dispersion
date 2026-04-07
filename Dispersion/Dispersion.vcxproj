@@ -143,6 +143,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\SceneGraphNode.cpp" />
     <ClCompile Include="src\RenderPass\DeferredShadingPass.cpp" />
     <ClCompile Include="src\RenderPass\RenderPass.cpp" />
     <ClCompile Include="src\Framebuffer.cpp" />
@@ -174,6 +175,7 @@
     <ClInclude Include="include\Model.h" />
     <ClInclude Include="include\RenderPass\RenderPass.h" />
     <ClInclude Include="include\Spotlight.h" />
+    <ClInclude Include="include\SceneGraphNode.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\basic.frag" />

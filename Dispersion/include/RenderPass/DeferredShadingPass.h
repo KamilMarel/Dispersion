@@ -6,10 +6,11 @@ public:
 	DeferredShadingPass(unsigned int windowWidth, unsigned int windowHeight);
 	~DeferredShadingPass();
 
-	void execute(SceneGraphNode* sceneRoot, glm::mat4& cameraView, glm::mat4& cameraProjection, Spotlight& sceneLight);
-	std::vector<unsigned int> getOutputTextures();
+	void execute(SceneGraphNode* sceneRoot, const glm::mat4& cameraView, const glm::mat4& cameraProjection, const Spotlight& sceneLight);
+	Framebuffer& getResult();
 private:
 	Framebuffer gBuffer;
+	Framebuffer resultBuffer;
 
 	Shader cameraGeometryPassShader;
 	Shader cameraLightingPassShader;

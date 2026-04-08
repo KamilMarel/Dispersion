@@ -8,4 +8,7 @@ struct Spotlight
 	glm::vec3 color;
 	float innerCutoff;
 	float outerCutoff;
+	float attenuationConstant;
+	float attenuationLinear;
+	float attenuationQuadratic;
 };

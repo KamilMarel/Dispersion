@@ -2,8 +2,7 @@
 #include <GLFW/glfw3.h>
 #include <iostream>
 #define STB_IMAGE_IMPLEMENTATION
-#include "Camera.h"
-#include "SceneGraphNode.h"
+#include "RenderPass/DeferredShadingPass.h"
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
@@ -92,7 +91,20 @@ int main()
     SceneGraphNode testRoom("models/roomScaled.obj");
     sceneRoot.addChild(&testObject);
     sceneRoot.addChild(&testRoom);
+    Spotlight sceneLight
+    {
+        glm::vec3(0.0f, 0.0f, 0.0f),
+        glm::vec3(1.0f, 0.0f, 0.0f),
+        glm::vec3(1.0f, 1.0f, 1.0f),
+        12.5f,
+        17.5f,
+        1.0f,
+        0.022f,
+        0.0019f
+    };
 #pragma endregion
+
+    DeferredShadingPass deferredShadingPass(SCR_WIDTH, SCR_HEIGHT);
 
     while (!glfwWindowShouldClose(window))
     {
@@ -111,7 +123,13 @@ int main()
         glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+        glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+        deferredShadingPass.execute(&sceneRoot, camera.GetViewMatrix(), projection, sceneLight);
 
+        glBindFramebuffer(GL_READ_FRAMEBUFFER, deferredShadingPass.getResult().getID());
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+        glBlitFramebuffer(0, 0, SCR_WIDTH, SCR_HEIGHT, 0, 0, SCR_WIDTH, SCR_HEIGHT, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
         if (settingsEnabled)
         {

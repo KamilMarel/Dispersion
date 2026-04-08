@@ -9,18 +9,21 @@ uniform sampler2D gAlbedo;
 uniform sampler2D shadowMap;
 uniform sampler2D causticMap;
 
-struct Light {
-    vec3 Position;
-    vec3 Color;
-    vec3 Direction;
-    float CutOff;
-    float OuterCutOff;
-    mat4 SpaceMatrix;
-    
-    float Linear;
-    float Quadratic;
+struct Spotlight {
+    vec3 position;
+    vec3 direction;
+    vec3 color;
+    float innerCutoff;
+    float outerCutoff;
+    float attenuationConstant;
+    float attenuationLinear;
+    float attenuationQuadratic;
+    //mat4 SpaceMatrix;
+    //float Linear;
+    //float Quadratic;
 };
-uniform Light light;
+uniform Spotlight light;
+
 uniform vec3 viewPos;
 
 vec4 DispersionCalculation(vec4 fragPosLightSpace)
@@ -67,32 +70,33 @@ void main()
     vec3 FragPos = texture(gPosition, TexCoords).rgb;
     vec3 Normal = texture(gNormal, TexCoords).rgb;
     vec3 Diffuse = texture(gAlbedo, TexCoords).rgb;
-    float Specular = texture(gAlbedo, TexCoords).a;
+    float Specular = 1.0f;
     
     vec3 lighting  = Diffuse * 0.1;
     vec3 viewDir  = normalize(viewPos - FragPos);
-    float distance = length(light.Position - FragPos);
+    float distance = length(light.position - FragPos);
 
-    vec3 lightDir = normalize(light.Position - FragPos);
-    vec3 diffuse = max(dot(Normal, lightDir), 0.0) * Diffuse * light.Color;
+    vec3 lightDir = normalize(light.position - FragPos);
+    vec3 diffuse = max(dot(Normal, lightDir), 0.0) * Diffuse * light.color;
 
     vec3 halfwayDir = normalize(lightDir + viewDir);  
     float spec = pow(max(dot(Normal, halfwayDir), 0.0), 16.0);
-    vec3 specular = light.Color * spec * Specular;
+    vec3 specular = light.color * spec * Specular;
 
-    float theta = dot(lightDir, normalize(-light.Direction)); 
-    float epsilon = (light.CutOff - light.OuterCutOff);
-    float intensity = clamp((theta - light.OuterCutOff) / epsilon, 0.0, 1.0);
+    float theta = dot(lightDir, normalize(-light.direction)); 
+    float epsilon = (light.innerCutoff - light.outerCutoff);
+    float intensity = clamp((theta - light.outerCutoff) / epsilon, 0.0, 1.0);
     diffuse *= intensity;
     specular *= intensity;
 
-    float attenuation = 1.0 / (1.0 + light.Linear * distance + light.Quadratic * distance * distance);
+    float attenuation = 1.0 / (light.attenuationConstant + light.attenuationLinear * distance + light.attenuationQuadratic * distance * distance);
     diffuse *= attenuation;
     specular *= attenuation;
 
-    float shadow = ShadowCalculation((light.SpaceMatrix * vec4(FragPos, 1.0)));
-    lighting += (1.0 - shadow) * (diffuse + specular);
-    lighting += DispersionCalculation((light.SpaceMatrix * vec4(FragPos, 1.0))).rgb;
+    //float shadow = ShadowCalculation((light.SpaceMatrix * vec4(FragPos, 1.0)));
+    //lighting += (1.0 - shadow) * (diffuse + specular);
+    lighting += diffuse + specular;
+    //lighting += DispersionCalculation((light.SpaceMatrix * vec4(FragPos, 1.0))).rgb;
 
     deferredShadingPassResult = lighting;
 }

@@ -25,6 +25,7 @@ void Framebuffer::addTextureColorAttachment()
 {
 	glBindFramebuffer(GL_FRAMEBUFFER, ID);
 
+	colorAttachmentsToDrawTo.push_back(GL_COLOR_ATTACHMENT0 + textureColorAttachments.size());
 	textureColorAttachments.push_back(0);
 	glGenTextures(1, &textureColorAttachments.back());
 	unsigned int newTextureColorAttachment = textureColorAttachments.back();
@@ -34,11 +35,18 @@ void Framebuffer::addTextureColorAttachment()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + textureColorAttachments.size() - 1, GL_TEXTURE_2D, newTextureColorAttachment, 0);
-	
+
+	glDrawBuffers(colorAttachmentsToDrawTo.size(), colorAttachmentsToDrawTo.data());
+
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 const std::vector<unsigned int>& Framebuffer::getTextureColorAttachments() const
 {
 	return textureColorAttachments;
+}
+
+unsigned int Framebuffer::getID()
+{
+	return ID;
 }

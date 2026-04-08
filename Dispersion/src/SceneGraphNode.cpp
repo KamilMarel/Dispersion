@@ -5,6 +5,7 @@ SceneGraphNode::SceneGraphNode()
 	transform = glm::mat4(1.0f);
 	objectModel = nullptr;
 	dirtyTransform = true;
+	isRefractor = false;
 }
 
 SceneGraphNode::SceneGraphNode(std::string objectModelPath) : SceneGraphNode()
@@ -23,6 +24,41 @@ SceneGraphNode::~SceneGraphNode()
 void SceneGraphNode::addChild(SceneGraphNode* nodeToAdd)
 {
 	children.push_back(nodeToAdd);
+}
+
+const std::vector<SceneGraphNode*>& SceneGraphNode::getChildren() const
+{
+	return children;
+}
+
+const std::vector<SceneGraphNode*> SceneGraphNode::getRefractors() const
+{
+	std::vector<SceneGraphNode*> queryResult;
+
+	for (SceneGraphNode* child : children)
+	{
+		if (child->isRefractor)
+		{
+			queryResult.push_back(child);
+		}
+	}
+
+	return queryResult;
+}
+
+const std::vector<SceneGraphNode*> SceneGraphNode::getOpaqueChildren() const
+{
+	std::vector<SceneGraphNode*> queryResult;
+
+	for (SceneGraphNode* child : children)
+	{
+		if (!child->isRefractor)
+		{
+			queryResult.push_back(child);
+		}
+	}
+
+	return queryResult;
 }
 
 void SceneGraphNode::render(const glm::mat4& parentTransform, bool parentTransformIsDirty, Shader& renderingShader)
@@ -45,6 +81,11 @@ void SceneGraphNode::render(const glm::mat4& parentTransform, bool parentTransfo
 	{
 		child->render(transform, dirtyFlag, renderingShader);
 	}
+}
+
+void SceneGraphNode::setRefractor(bool isRefractor)
+{
+	this->isRefractor = isRefractor;
 }
 
 void SceneGraphNode::translate(const glm::vec3& translation)

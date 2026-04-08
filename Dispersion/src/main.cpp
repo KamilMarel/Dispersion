@@ -89,9 +89,10 @@ int main()
 #pragma region Scene setup
     SceneGraphNode sceneRoot;
     SceneGraphNode testObject("models/box.obj");
-    //SceneGraphNode testRoom("models/roomScaled.obj");
+    testObject.setRefractor(true);
+    SceneGraphNode testRoom("models/roomScaled.obj");
     sceneRoot.addChild(&testObject);
-    //sceneRoot.addChild(&testRoom);
+    sceneRoot.addChild(&testRoom);
     Spotlight sceneLight
     {
         glm::vec3(0.0f, 0.0f, 0.0f),

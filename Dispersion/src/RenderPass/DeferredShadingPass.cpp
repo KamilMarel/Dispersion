@@ -30,12 +30,17 @@ DeferredShadingPass::~DeferredShadingPass()
 
 void DeferredShadingPass::execute(SceneGraphNode* sceneRoot, const glm::mat4& cameraView, const glm::mat4& cameraProjection, const Spotlight& sceneLight)
 {
+	std::vector<SceneGraphNode*> opaqueObjects = sceneRoot->getOpaqueChildren();
+
 	gBuffer.bind();
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	cameraGeometryPassShader.use();
 	cameraGeometryPassShader.setMat4("view", cameraView);
 	cameraGeometryPassShader.setMat4("projection", cameraProjection);
-	sceneRoot->render(glm::mat4(1.0f), true, cameraGeometryPassShader);
+	for (SceneGraphNode* opaqueObject : opaqueObjects)
+	{
+		opaqueObject->render(glm::mat4(1.0f), true, cameraGeometryPassShader);
+	}
 	gBuffer.unbind();
 
 	resultBuffer.bind();

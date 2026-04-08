@@ -3,6 +3,13 @@
 Framebuffer::Framebuffer(unsigned int attachmentsWidth, unsigned int attachmentsHeight) : attachmentsWidth(attachmentsWidth), attachmentsHeight(attachmentsHeight)
 {
 	glGenFramebuffers(1, &ID);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, ID);
+	glGenRenderbuffers(1, &rboDepth);
+	glBindRenderbuffer(GL_RENDERBUFFER, rboDepth);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, attachmentsWidth, attachmentsHeight);
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rboDepth);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 Framebuffer::~Framebuffer()

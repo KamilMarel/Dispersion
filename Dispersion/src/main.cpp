@@ -82,15 +82,16 @@ int main()
 
 #pragma region OpenGL functions setup
     glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LESS);
     glEnable(GL_PROGRAM_POINT_SIZE);
 #pragma endregion
 
 #pragma region Scene setup
     SceneGraphNode sceneRoot;
     SceneGraphNode testObject("models/box.obj");
-    SceneGraphNode testRoom("models/roomScaled.obj");
+    //SceneGraphNode testRoom("models/roomScaled.obj");
     sceneRoot.addChild(&testObject);
-    sceneRoot.addChild(&testRoom);
+    //sceneRoot.addChild(&testRoom);
     Spotlight sceneLight
     {
         glm::vec3(0.0f, 0.0f, 0.0f),

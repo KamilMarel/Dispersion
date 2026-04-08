@@ -95,7 +95,10 @@ void main()
 
     //float shadow = ShadowCalculation((light.SpaceMatrix * vec4(FragPos, 1.0)));
     //lighting += (1.0 - shadow) * (diffuse + specular);
+
     lighting += diffuse + specular;
+    lighting = Diffuse;
+
     //lighting += DispersionCalculation((light.SpaceMatrix * vec4(FragPos, 1.0))).rgb;
 
     deferredShadingPassResult = lighting;
